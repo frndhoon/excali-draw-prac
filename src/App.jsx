@@ -11,19 +11,23 @@ function App() {
   const [leftExcalidrawAPI, setLeftExcalidrawAPI] = useState(null);
   const [rightExcalidrawAPI, setRightExcalidrawAPI] = useState(null);
 
-  const updateLeftScene = () => {
-    const leftSceneData = {
-      elements: leftElements,
-    };
-    leftExcalidrawAPI.updateScene(leftSceneData);
-  };
+  const updateLeftScene = useCallback(() => {
+    if (leftExcalidrawAPI) {
+      const leftSceneData = {
+        elements: leftElements,
+      };
+      leftExcalidrawAPI.updateScene(leftSceneData);
+    }
+  }, [leftExcalidrawAPI, leftElements]);
 
-  const updateRightScene = () => {
-    const rightSceneData = {
-      elements: rightElements,
-    };
-    rightExcalidrawAPI.updateScene(rightSceneData);
-  };
+  const updateRightScene = useCallback(() => {
+    if (rightExcalidrawAPI) {
+      const rightSceneData = {
+        elements: rightElements,
+      };
+      rightExcalidrawAPI.updateScene(rightSceneData);
+    }
+  }, [rightExcalidrawAPI, rightElements]);
 
   useEffect(() => {
     socket.on('assignBoard', (board) => {
@@ -34,6 +38,7 @@ function App() {
       if (!isLeftBoard) {
         console.log('Received left board update:', elements);
         setLeftElements(elements);
+        setTimeout(() => updateLeftScene(), 0);
       }
     });
 
@@ -41,6 +46,7 @@ function App() {
       if (isLeftBoard) {
         console.log('Received right board update:', elements);
         setRightElements(elements);
+        setTimeout(() => updateRightScene(), 0);
       }
     });
 
@@ -49,7 +55,7 @@ function App() {
       socket.off('updateLeftBoard');
       socket.off('updateRightBoard');
     };
-  }, [isLeftBoard]);
+  }, [isLeftBoard, updateLeftScene, updateRightScene]);
 
   const onChangeLeft = useCallback(
     (elements) => {
